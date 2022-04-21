@@ -13,7 +13,7 @@ public class Main {
         graphLayout.panel.setPreferredSize(new Dimension(1500, 1000));
 
         // Customize our JFrame
-        JFrame frame = new JFrame("Behind The Curve");
+        JFrame frame = new JFrame("Kappa Reliability");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().add(graphLayout.panel);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -21,19 +21,27 @@ public class Main {
         frame.setVisible(true);
 
         // Run our simulations
-        for (double i = 0.6; i <= 0.8; i += 0.01) {
-            for (double j = 0.1; j <= 0.3; j += 0.1) {
+        for (double i = 0.61; 0.8 - i > 0; i += 0.01) {
+            System.out.println("//===========================================");
+            System.out.println("th: " + i);
+            System.out.println("Population Kappa: " + (i - 0.05));
+
+            TableBuilder populationTable = new TableBuilder(i - 0.05, POPULATION_SIZE);
+            int[] rater1 = populationTable.rater1;
+            int[] rater2 = populationTable.rater2;
+
+            graphLayout.runSimulation(i, SAMPLE_SIZE, ITERATIONS, rater1, rater2, POPULATION_SIZE, "" + 0.05);
+            for (double j = 0.1; j <= 0.35; j += 0.1) {
                 System.out.println("//===========================================");
-                System.out.println("TH: " + i);
+                System.out.println("th: " + i);
                 System.out.println("Population Kappa: " + (i - j));
 
-                TableBuilder populationTable = new TableBuilder(i - j, POPULATION_SIZE);
-                int[] rater1 = populationTable.rater1;
-                int[] rater2 = populationTable.rater2;
+                populationTable = new TableBuilder(i - j, POPULATION_SIZE);
+                rater1 = populationTable.rater1;
+                rater2 = populationTable.rater2;
 
                 graphLayout.runSimulation(i, SAMPLE_SIZE, ITERATIONS, rater1, rater2, POPULATION_SIZE, "" + j);
             }
         }
-
     }
 }

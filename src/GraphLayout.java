@@ -15,31 +15,38 @@ public class GraphLayout {
     ArrayList<Double> th2Array = new ArrayList<>();
     ArrayList<Double> th3Array = new ArrayList<>();
 
-    public GraphLayout (){
+    ArrayList<Double> th05XArray = new ArrayList<>();
+    ArrayList<Double> th1XArray = new ArrayList<>();
+    ArrayList<Double> th2XArray = new ArrayList<>();
+    ArrayList<Double> th3XArray = new ArrayList<>();
+
+    public GraphLayout () {
         rand = new Random();
         drawComponents();
     }
 
     public void drawComponents() {
-        // Add values to our array TODO
-        th05Array.add(0.0);
-        th1Array.add(0.0);
-        th2Array.add(0.0);
-        th3Array.add(0.0);
+        // Initialize Array with starting values (th 0.6, tk th - 0.05 ...)
+        init();
 
         // Initialized the chart
         chart = new XYChartBuilder().width(600).height(350).title("% Subsample Kappa over Criterion Kappa (Sample Size: 60)")
                 .xAxisTitle("Criterion Kappa").yAxisTitle("Percentage over criterion").build();
 
-        XYSeries th05Series = chart.addSeries("th-0.05", th05Array);
-        XYSeries th1Series = chart.addSeries("th-0.1", th1Array);
-        XYSeries th2Series = chart.addSeries("th-0.2", th2Array);
-        XYSeries th3Series = chart.addSeries("th-0.3", th3Array);
+        XYSeries th05Series = chart.addSeries("th-0.05", th05XArray, th05Array);
+        XYSeries th1Series = chart.addSeries("th-0.1", th1XArray, th1Array);
+        XYSeries th2Series = chart.addSeries("th-0.2", th2XArray, th2Array);
+        XYSeries th3Series = chart.addSeries("th-0.3", th3XArray, th3Array);
 
         // Customize Chart
         chart.getStyler().setDefaultSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Area);
         chart.getStyler().setMarkerSize(0);
         chart.getStyler().setCursorEnabled(true);
+
+        chart.getStyler().setYAxisMin(0.0);
+        chart.getStyler().setYAxisMax(1.0);
+        chart.getStyler().setXAxisMin(0.6);
+        chart.getStyler().setXAxisMax(0.8);
 
         th05Series.setEnabled(true);
         th1Series.setEnabled(true);
@@ -50,28 +57,66 @@ public class GraphLayout {
 
         repaint();
     }
+    private void init() {
+        System.out.println("Making initial calculations...");
+        double criterionKappa = 0.6;
+        int subSampleSize = 60;
+        int populationSize = 1000 * 1000;
+        int iterations = 100 * 1000;
+
+        TableBuilder population = new TableBuilder(criterionKappa - 0.05, populationSize);
+        th05Array.add(getPercentage(criterionKappa, subSampleSize, iterations,
+                population.rater1, population.rater2, population.populationSize));
+
+        population = new TableBuilder(criterionKappa - 0.1, populationSize);
+        th1Array.add(getPercentage(criterionKappa, subSampleSize, iterations,
+                population.rater1, population.rater2, population.populationSize));
+
+        population = new TableBuilder(criterionKappa - 0.2, populationSize);
+        th2Array.add(getPercentage(criterionKappa, subSampleSize, iterations,
+                population.rater1, population.rater2, population.populationSize));
+
+        population = new TableBuilder(criterionKappa - 0.3, populationSize);
+        th3Array.add(getPercentage(criterionKappa, subSampleSize, iterations,
+                population.rater1, population.rater2, population.populationSize));
+
+        th05XArray.add(criterionKappa);
+        th1XArray.add(criterionKappa);
+        th2XArray.add(criterionKappa);
+        th3XArray.add(criterionKappa);
+    }
 
     public void runSimulation(double criterionKappa, int subSampleSize, int iterations, int[] rater1, int[] rater2, int populationSize, String trueKappa) {
         double percentage = getPercentage(criterionKappa, subSampleSize, iterations, rater1, rater2, populationSize);
-        System.out.println("% above th: " + percentage + "%");
+        System.out.println("% above th: " + percentage / 100 + "%");
 
         switch (trueKappa) {
             case "0.05":
                 th05Array.add(percentage);
+                th05XArray.add(criterionKappa);
                 break;
             case "0.1":
                 th1Array.add(percentage);
+                th1XArray.add(criterionKappa);
                 break;
             case "0.2":
                 th2Array.add(percentage);
+                th2XArray.add(criterionKappa);
                 break;
             case "0.3":
                 th3Array.add(percentage);
+                th3XArray.add(criterionKappa);
                 break;
             default:
                 System.out.println("Error");
                 break;
         }
+
+        // Updates the chart
+        chart.updateXYSeries("th-0.05", th05XArray, th05Array, null);
+        chart.updateXYSeries("th-0.1", th1XArray, th1Array, null);
+        chart.updateXYSeries("th-0.2", th2XArray, th2Array, null);
+        chart.updateXYSeries("th-0.3", th3XArray, th3Array, null);
 
         repaint();
     }
@@ -108,7 +153,7 @@ public class GraphLayout {
             }
         }
 
-        return ((double) kappaOverCriterion / iterations) * 100;
+        return ((double) kappaOverCriterion / iterations);
     }
 
     private void repaint() {

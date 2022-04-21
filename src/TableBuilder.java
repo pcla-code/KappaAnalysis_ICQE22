@@ -64,10 +64,10 @@ public class TableBuilder {
     }
 
     private void initiallyPopulateRaters(int[] rater1, int[] rater2, int count) {
-        int num1 = rand.nextInt(2);
-        int num2 = rand.nextInt(2);
-
         for (int i = 0; i < count; i++) {
+            int num1 = rand.nextInt(2);
+            int num2 = rand.nextInt(2);
+
             rater1[i] = num1;
             rater2[i] = num2;
 
@@ -75,7 +75,7 @@ public class TableBuilder {
         }
     }
 
-    private void printTable(int[][] table) {
+    public static void printTable(int[][] table) {
         System.out.println("//===========");
         System.out.println("| " + table[0][0] + " | " + table[0][1] + " |");
         System.out.println("| " + table[1][0] + " | " + table[1][1] + " |");
