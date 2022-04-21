@@ -88,7 +88,7 @@ public class GraphLayout {
 
     public void runSimulation(double criterionKappa, int subSampleSize, int iterations, int[] rater1, int[] rater2, int populationSize, String trueKappa) {
         double percentage = getPercentage(criterionKappa, subSampleSize, iterations, rater1, rater2, populationSize);
-        System.out.println("% above th: " + percentage / 100 + "%");
+        System.out.println("% above th: " + percentage * 100 + "%");
 
         switch (trueKappa) {
             case "0.05":
@@ -108,6 +108,7 @@ public class GraphLayout {
                 th3XArray.add(criterionKappa);
                 break;
             default:
+                System.out.println(trueKappa);
                 System.out.println("Error");
                 break;
         }
