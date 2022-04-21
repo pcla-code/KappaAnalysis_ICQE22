@@ -1,5 +1,5 @@
-import com.sun.xml.internal.xsom.XSUnionSimpleType;
-
+import javax.swing.*;
+import java.awt.*;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -14,75 +14,97 @@ public class Main {
 
     private static final Random rand = new Random();
 
-    private static int[][] table;
     private static int[] rater1;
     private static int[] rater2;
 
-    private static final int POPULATION_SIZE = 1000 * 1000; // 1 Million
-    private static final int NUM_RATERS = 2;
-    private static final int SAMPLE_SIZE = 500; // 60, 100, 200, 500
-    private static final double CRITERION_KAPPA = 0.75; // 0.6, 0.65, 0.7, 0.75, 0.8
+    private static final int POPULATION_SIZE = 100 * 1000 * 1000; // 100 Million
+    private static final int SAMPLE_SIZE = 60; // 60, 100, 200, 500
+    private static double CRITERION_KAPPA = 0.7; // 0.6, 0.65, 0.7, 0.75, 0.8
     private static final double TARGET_KAPPA = CRITERION_KAPPA - 0.05; // th-0.05, th-0.1, th-0.2, th-0.3
-    private static final int ITERATIONS = 100 * 1000;
+    private static final int ITERATIONS = 1000 * 1000; //1 million
 
     public static void main(String[] args) {
-        System.out.println("Criterion-Kappa: " + CRITERION_KAPPA);
+        GraphLayout graphLayout = new GraphLayout();
+        graphLayout.panel.setPreferredSize(new Dimension(1500, 1000));
+
+        JFrame frame = new JFrame("Behind The Curve");
+
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // add components into our content page
+        frame.getContentPane().add(graphLayout.panel);
+        // set dimensions
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        // layout all the components
+        frame.pack();
+        // make our frame visible to the user
+        frame.setVisible(true);
+
+//        runAnalysis(CRITERION_KAPPA); // CRITERION_KAPPA = 0.6
+//        CRITERION_KAPPA += 0.05;
+//        runAnalysis(CRITERION_KAPPA); // CRITERION_KAPPA = 0.65
+//        CRITERION_KAPPA += 0.05;
+//        runAnalysis(CRITERION_KAPPA); // CRITERION_KAPPA = 0.7
+//        CRITERION_KAPPA += 0.05;
+//        runAnalysis(CRITERION_KAPPA + 0.05); // CRITERION_KAPPA = 0.75
+//        runAnalysis(CRITERION_KAPPA + 0.05); // CRITERION_KAPPA = 0.8
+    }
+
+    private static void runAnalysis(double thresholdKappa) {
+        System.out.println("Criterion-Kappa: " + thresholdKappa);
 
         System.out.println("Running simulation with true kappa: th - 0.05");
         // 1. Build Dataset [Done and works]
-        buildDataset(CRITERION_KAPPA - 0.05, POPULATION_SIZE, NUM_RATERS);
+        buildDataset(thresholdKappa - 0.05, POPULATION_SIZE);
 
         System.out.println();
 
         // 2. Run Simulation
-        runSimulation(CRITERION_KAPPA, SAMPLE_SIZE, ITERATIONS);
+        runSimulation(thresholdKappa, SAMPLE_SIZE, ITERATIONS);
 
         System.out.println("================");
 
         System.out.println("Running simulation with true kappa: th - 0.1");
         // 1. Build Dataset [Done and works]
-        buildDataset(CRITERION_KAPPA - 0.1, POPULATION_SIZE, NUM_RATERS);
+        buildDataset(thresholdKappa - 0.1, POPULATION_SIZE);
 
         System.out.println();
 
         // 2. Run Simulation
-        runSimulation(CRITERION_KAPPA, SAMPLE_SIZE, ITERATIONS);
+        runSimulation(thresholdKappa, SAMPLE_SIZE, ITERATIONS);
 
         System.out.println("================");
 
         System.out.println("Running simulation with true kappa: th - 0.2");
         // 1. Build Dataset [Done and works]
-        buildDataset(CRITERION_KAPPA - 0.2, POPULATION_SIZE, NUM_RATERS);
+        buildDataset(thresholdKappa - 0.2, POPULATION_SIZE);
 
         System.out.println();
 
         // 2. Run Simulation
-        runSimulation(CRITERION_KAPPA, SAMPLE_SIZE, ITERATIONS);
+        runSimulation(thresholdKappa, SAMPLE_SIZE, ITERATIONS);
 
         System.out.println("================");
 
         System.out.println("Running simulation with true kappa: th - 0.3");
         // 1. Build Dataset [Done and works]
-        buildDataset(CRITERION_KAPPA - 0.3, POPULATION_SIZE, NUM_RATERS);
+        buildDataset(thresholdKappa - 0.3, POPULATION_SIZE);
 
         System.out.println();
 
         // 2. Run Simulation
-        runSimulation(CRITERION_KAPPA, SAMPLE_SIZE, ITERATIONS);
+        runSimulation(thresholdKappa, SAMPLE_SIZE, ITERATIONS);
     }
 
     private static void runSimulation(double criterionKappa, int subSampleSize, int iterations) {
-        double[] kappaOverCriterion = new double[iterations];
+        int kappaOverCriterion = 0;
+
         // Run number of iterations times
         for (int i = 0; i < iterations; i++) {
             // Keeps track of visited indexes to prevent duplicates
             boolean[] visited = new boolean[POPULATION_SIZE];
             int[] sample1 = new int[subSampleSize];
             int[] sample2 = new int[subSampleSize];
-
-            // To avoid confusion
-            Arrays.fill(sample1, -1);
-            Arrays.fill(sample2, -2);
 
             // To keep track of our subSample
             int[][] subSampleTable = new int[2][2];
@@ -108,24 +130,19 @@ public class Main {
 
             // Compare only if kappa is higher than our cutoff
             if (currentKappa > criterionKappa) {
-                kappaOverCriterion[i] = currentKappa;
+                kappaOverCriterion++;
             }
         }
 
-        int count = 0;
-        for (int i = 0; i < kappaOverCriterion.length; i++) {
-            if (kappaOverCriterion[i] != 0) {
-                count++;
-            }
-        }
-        System.out.println("Above TH: " + count);
-        System.out.println("% above th: " + ((double) count/iterations) * 100 + "%");
+        System.out.println("Above TH: " + kappaOverCriterion);
+        System.out.println("% above th: " + ((double) kappaOverCriterion/iterations) * 100 + "%");
     }
 
-    public static void buildDataset(double targetKappa, int populationSize, int numberRaters) {
-        table = new int[2][2];
+    public static void buildDataset(double targetKappa, int populationSize) {
         rater1 = new int[populationSize];
         rater2 = new int[populationSize];
+
+        int[][] populationTable = new int[2][2];
 
         // Originally fill arrays to avoid confusion during calculation
         Arrays.fill(rater1, -1);
@@ -133,11 +150,11 @@ public class Main {
 
         // Initialize the first 200 values in the table
         initiallyPopulateRaters(rater1, rater2, 200);
-        updateTable(rater1, rater2, table);
+        updateTable(rater1, rater2, populationTable);
 
         // Populate the rest of the population, fine-tuning it to the target kappa
         for (int i = 200; i < populationSize; i++) {
-            double currentKappa = getKappaValue(table);
+            double currentKappa = getKappaValue(populationTable);
 
             int number = rand.nextInt(2);
             if (currentKappa < targetKappa) {
@@ -147,12 +164,12 @@ public class Main {
                 rater1[i] = number;
                 rater2[i] = (number + 1) % 2;
             }
-            table[(rater2[i] + 1) % 2][(rater1[i] + 1) % 2]++;
+            populationTable[(rater2[i] + 1) % 2][(rater1[i] + 1) % 2]++;
         }
-        updateTable(rater1, rater2, table);
-        System.out.println("Population Kappa: " + getKappaValue(table));
+        updateTable(rater1, rater2, populationTable);
+        System.out.println("Population Kappa: " + getKappaValue(populationTable));
         System.out.println("Population table");
-        printTable(table);
+        printTable(populationTable);
     }
 
     private static double getKappaValue(int[][] table) {
