@@ -21,7 +21,8 @@ public class Main {
         frame.setVisible(true);
 
         // Run our simulations
-        for (double i = 0.61; 0.8 - i > 0; i += 0.01) {
+        // Starting at 0.61 because to init our graph, it already calculated 0.6
+        for (double i = 0.61; i < 0.81; i += 0.01) {
             System.out.println("//===========================================");
             System.out.println("th: " + i);
             System.out.println("Population Kappa: " + (i - 0.05));
@@ -32,6 +33,8 @@ public class Main {
 
             graphLayout.runSimulation(i, SAMPLE_SIZE, ITERATIONS, rater1, rater2, POPULATION_SIZE, "" + 0.05);
             for (double j = 0.1; j <= 0.35; j += 0.1) {
+                i = round(i, 2);
+                j = round(j, 2);
                 System.out.println("//===========================================");
                 System.out.println("th: " + i);
                 System.out.println("Population Kappa: " + (i - j));
@@ -43,5 +46,10 @@ public class Main {
                 graphLayout.runSimulation(i, SAMPLE_SIZE, ITERATIONS, rater1, rater2, POPULATION_SIZE, "" + j);
             }
         }
+    }
+
+    private static double round (double value, int precision) {
+        int scale = (int) Math.pow(10, precision);
+        return (double) Math.round(value * scale) / scale;
     }
 }
